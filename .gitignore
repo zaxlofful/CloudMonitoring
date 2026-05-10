@@ -39,3 +39,9 @@ luac.out
 *.x86_64
 *.hex
 
+# Python artifacts (daemon/)
+__pycache__/
+*.pyc
+.venv/
+venv/
+daemon_state.json
