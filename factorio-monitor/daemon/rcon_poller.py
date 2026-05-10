@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-import os
 import random
 import socket
 import struct
@@ -13,6 +12,7 @@ from typing import Any, Callable
 
 _PACKET_TYPE_RESPONSE_VALUE = 0
 _PACKET_TYPE_COMMAND = 2
+_PACKET_TYPE_AUTH_RESPONSE = 2
 _PACKET_TYPE_AUTH = 3
 
 
@@ -65,11 +65,9 @@ class RconClient:
         authed = False
         while time.time() < deadline:
             pid, ptype, _payload = self._recv_packet()
-            if ptype == _PACKET_TYPE_COMMAND:
-                continue
             if pid == -1:
                 raise RconError("authentication failed")
-            if pid == request_id:
+            if pid == request_id and ptype == _PACKET_TYPE_AUTH_RESPONSE:
                 authed = True
                 break
         if not authed:
@@ -155,4 +153,3 @@ class RconPoller(threading.Thread):
             return
         if isinstance(state, dict):
             self._on_state(state)
-
