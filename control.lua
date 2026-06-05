@@ -1,6 +1,10 @@
 -- CloudMonitoring control.lua
 -- Every 15 seconds, writes per-surface item production rates (items/minute)
 -- to a new timestamped JSON file in script-output/.
+--
+-- Files accumulate intentionally: the companion server reads them for
+-- time-series analysis. Clean up old files externally if disk space is a
+-- concern (e.g. keep only the last N files in script-output/).
 
 local WRITE_INTERVAL = 900 -- 15 seconds * 60 ticks/second
 
@@ -14,6 +18,10 @@ local PRODUCTION_ENTITY_TYPES = {
 
 -- Returns a table of {item_name -> items_per_minute} for all actively
 -- crafting production entities on the given surface.
+--
+-- NOTE: find_entities_filtered scans all matching entities on the surface
+-- every 15 seconds. This is acceptable for typical factory sizes, but very
+-- large maps (thousands of machines) may see minor UPS impact at this cadence.
 local function calculate_production_rates(surface)
     local rates = {}
 
@@ -26,13 +34,16 @@ local function calculate_production_rates(surface)
             local recipe = entity.get_recipe()
             if recipe then
                 local crafting_speed = entity.crafting_speed
+                -- recipe.energy is the crafting time in seconds (despite the name).
                 local crafting_time = recipe.energy
 
                 if crafting_time > 0 then
                     for _, product in pairs(recipe.products) do
                         if product.type == "item" then
                             -- Use fixed amount when available; otherwise take the
-                            -- midpoint of the min/max range.
+                            -- midpoint of the min/max range as an approximation.
+                            -- Actual rates may vary from this estimate when RNG
+                            -- yields amounts outside the midpoint.
                             local amount
                             if product.amount then
                                 amount = product.amount
