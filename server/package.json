@@ -1,0 +1,22 @@
+{
+  "name": "cloudmonitoring-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CloudMonitoring sidecar server: watches script-output JSON and sends alerts.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node scripts/check-syntax.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "nodemailer": "^8.0.10",
+    "yaml": "^2.9.0"
+  },
+  "optionalDependencies": {
+    "twilio": "^6.0.2"
+  }
+}
