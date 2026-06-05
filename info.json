@@ -1,11 +1,11 @@
 {
   "name": "CloudMonitoring",
-  "version": "0.1.0",
-  "factorio_version": "0.17",
+  "version": "0.2.0",
+  "factorio_version": "1.1",
   "title": "Cloud Monitoring",
   "author": "Zax Lofful",
   "description": "A set of mods and tools that allow monitoring of the factory from the cloud. Main features are real-time data processing on and outside server, reporting, and alerting for events within the game.",
   "dependencies": [
-    "base >= 0.17.29"
+    "base >= 1.1.0"
   ]
 }
