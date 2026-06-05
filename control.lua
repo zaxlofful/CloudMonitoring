@@ -13,10 +13,10 @@ script.on_nth_tick(WRITE_INTERVAL, function(event)
     local fluid_consumption_totals = {}
 
     for _, force in pairs(game.forces) do
-        accumulate_counts(item_production_totals, force.item_production_statistics.input_counts)
-        accumulate_counts(item_consumption_totals, force.item_production_statistics.output_counts)
-        accumulate_counts(fluid_production_totals, force.fluid_production_statistics.input_counts)
-        accumulate_counts(fluid_consumption_totals, force.fluid_production_statistics.output_counts)
+        accumulate_counts(item_production_totals, force.item_production_statistics.output_counts)
+        accumulate_counts(item_consumption_totals, force.item_production_statistics.input_counts)
+        accumulate_counts(fluid_production_totals, force.fluid_production_statistics.output_counts)
+        accumulate_counts(fluid_consumption_totals, force.fluid_production_statistics.input_counts)
     end
 
     local output = {
