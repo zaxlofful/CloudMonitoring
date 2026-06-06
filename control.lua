@@ -16,6 +16,7 @@ local CLOSE_FOOTER_BUTTON = "cloudmonitoring_close_footer"
 local PROPERTY_PREFIX = "cloudmonitoring_property_"
 local ITEM_PREFIX = "cloudmonitoring_item_"
 local PROPERTY_SYNC_EVENT = script.generate_event_name()
+local PRIVATE_PREFIX = "__"
 
 local FORCE_PROPERTY_FALLBACK = {
   "ai_controllable",
@@ -73,6 +74,10 @@ local function copy_items(items)
   return copied
 end
 
+local function to_bool(value)
+  return value == true
+end
+
 local function sorted_keys(map)
   local keys = {}
   for key in pairs(map or {}) do
@@ -94,7 +99,7 @@ local function detect_force_properties()
   local force = get_sample_force()
   if force then
     local function add_if_readable(property_name)
-      if type(property_name) ~= "string" or string.sub(property_name, 1, 2) == "__" then
+      if type(property_name) ~= "string" or string.sub(property_name, 1, #PRIVATE_PREFIX) == PRIVATE_PREFIX then
         return
       end
       local ok, value = pcall(function()
@@ -552,12 +557,13 @@ local function apply_property_change(property_name, enabled, source_player_index
     return false
   end
 
-  global.cloudmonitoring_config.enabled_properties[property_name] = enabled and true or false
+  local bool_enabled = to_bool(enabled)
+  global.cloudmonitoring_config.enabled_properties[property_name] = bool_enabled
   refresh_all_open_guis()
 
   if source_player_index and game.players[source_player_index] then
     local source_name = game.players[source_player_index].name
-    game.print("[CloudMonitoring] " .. source_name .. " updated " .. property_name .. " = " .. tostring(enabled and true or false))
+    game.print("[CloudMonitoring] " .. source_name .. " updated " .. property_name .. " = " .. tostring(bool_enabled))
   end
 
   return true
@@ -776,6 +782,11 @@ local function on_player_joined(event)
   end
 end
 
+local function on_player_created(event)
+  local player = game.get_player(event.player_index)
+  initialize_player(player)
+end
+
 local function on_init()
   ensure_runtime_state()
 
@@ -800,32 +811,25 @@ remote.add_interface("cloudmonitoring", {
     ensure_runtime_state()
     local copied = {}
     for property_name, enabled in pairs(global.cloudmonitoring_config.enabled_properties) do
-      copied[property_name] = enabled and true or false
+      copied[property_name] = to_bool(enabled)
     end
     return copied
   end
 })
 
-commands.add_command("cloudmonitoring", "Open CloudMonitoring config GUI", function(command)
+local function open_gui_from_command(command)
   local player = command.player_index and game.get_player(command.player_index)
   if player then
     build_gui(player)
   end
-end)
+end
 
-commands.add_command("cm", "Open CloudMonitoring config GUI", function(command)
-  local player = command.player_index and game.get_player(command.player_index)
-  if player then
-    build_gui(player)
-  end
-end)
+commands.add_command("cloudmonitoring", "Open CloudMonitoring config GUI", open_gui_from_command)
+commands.add_command("cm", "Open CloudMonitoring config GUI", open_gui_from_command)
 
 script.on_init(on_init)
 script.on_configuration_changed(on_configuration_changed)
-script.on_event(defines.events.on_player_created, function(event)
-  local player = game.get_player(event.player_index)
-  initialize_player(player)
-end)
+script.on_event(defines.events.on_player_created, on_player_created)
 script.on_event(defines.events.on_player_joined_game, on_player_joined)
 script.on_event(defines.events.on_gui_click, on_gui_click)
 script.on_event(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
