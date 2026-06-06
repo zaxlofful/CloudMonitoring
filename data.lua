@@ -12,14 +12,14 @@ data:extend({
     associated_control_input = "cloudmonitoring-toggle-gui",
     toggleable = true,
     icon = {
-      filename = "__base__/graphics/icons/iron-plate.png",
+      filename = "__base__/graphics/icons/radar.png",
       priority = "extra-high-no-scale",
       size = 64,
       mipmap_count = 4,
       flags = { "icon" }
     },
     small_icon = {
-      filename = "__base__/graphics/icons/iron-plate.png",
+      filename = "__base__/graphics/icons/radar.png",
       priority = "extra-high-no-scale",
       size = 64,
       mipmap_count = 4,

@@ -15,6 +15,7 @@ local CLEAR_ALL_BUTTON = "cloudmonitoring_clear_all_items"
 local CLOSE_FOOTER_BUTTON = "cloudmonitoring_close_footer"
 local PROPERTY_PREFIX = "cloudmonitoring_property_"
 local ITEM_PREFIX = "cloudmonitoring_item_"
+local PROPERTY_SYNC_EVENT = script.generate_event_name()
 
 local PRODUCTION_PRESET_ITEMS = {
   "iron-plate",
@@ -504,12 +505,16 @@ local function apply_property_change(property_name, enabled, source_player_index
 end
 
 local function sync_property_change(property_name, enabled, source_player_index)
-  local ok, result = pcall(remote.call, "cloudmonitoring", "sync_property_change", property_name, enabled, source_player_index)
+  local ok, result = pcall(script.raise_event, PROPERTY_SYNC_EVENT, {
+    property_name = property_name,
+    enabled = enabled,
+    source_player_index = source_player_index
+  })
   if not ok then
     log("[CloudMonitoring] Property broadcast failed: " .. tostring(result))
     return false
   end
-  return result
+  return true
 end
 
 local function update_filter_enabled_state(filter_state)
@@ -763,4 +768,7 @@ script.on_event(defines.events.on_gui_click, on_gui_click)
 script.on_event(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 script.on_event(defines.events.on_gui_text_changed, on_gui_text_changed)
 script.on_event(defines.events.on_lua_shortcut, on_lua_shortcut)
+script.on_event(PROPERTY_SYNC_EVENT, function(event)
+  apply_property_change(event.property_name, event.enabled, event.source_player_index)
+end)
 script.on_event("cloudmonitoring-toggle-gui", on_hotkey)
