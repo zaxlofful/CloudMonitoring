@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -134,29 +135,36 @@ func main() {
 
 			log.Printf("ALERT: %s - %s (rate: %.2f)", trans.ItemName, event, trans.ProductionRate)
 
-			// Send notifications concurrently
+			// Send notifications concurrently with proper synchronization
 			var triggered []string
 			var failed []string
+			var mu sync.Mutex
+			var wg sync.WaitGroup
 
 			for _, notifier := range enabledNotifiers {
+				wg.Add(1)
 				notifierType := notifier.Type()
 				go func(n notifiers.Notifier, nType string) {
+					defer wg.Done()
 					notifCtx, notifCancel := context.WithTimeout(ctx, 30*time.Second)
 					defer notifCancel()
 
 					if err := n.Notify(notifCtx, trans.ItemName, event, trans.ProductionRate); err != nil {
 						log.Printf("Notifier %s failed for %s: %v", nType, trans.ItemName, err)
+						mu.Lock()
 						failed = append(failed, nType)
+						mu.Unlock()
 					} else {
 						log.Printf("Notifier %s succeeded for %s", nType, trans.ItemName)
+						mu.Lock()
 						triggered = append(triggered, nType)
+						mu.Unlock()
 					}
 				}(notifier, notifierType)
 			}
 
-			// Give notifications a moment to complete before logging
-			// This is a simple approach; in production you'd use sync primitives
-			time.Sleep(100 * time.Millisecond)
+			// Wait for all notifications to complete
+			wg.Wait()
 
 			// Log the alert
 			if err := alertLogger.Log(trans.ItemName, event, trans.ProductionRate, triggered, failed); err != nil {

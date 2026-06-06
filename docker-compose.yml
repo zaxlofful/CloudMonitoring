@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Factorio server
+  factorio:
+    image: factoriotools/factorio:latest
+    ports:
+      - "34197:34197/udp"
+      - "27015:27015/tcp"
+    volumes:
+      # Game save data
+      - ./factorio-data:/factorio
+      # Mount the mod
+      - ./:/factorio/mods/CloudMonitoring:ro
+    environment:
+      - UPDATE_MODS_ON_START=true
+    restart: unless-stopped
+
+  # CloudMonitoring backend
+  cloudmonitoring:
+    build: ./backend
+    depends_on:
+      - factorio
+    volumes:
+      # Share game data directory to read script-output
+      - ./factorio-data:/app/gamedata:ro
+      # Mount config
+      - ./backend/cloudmonitoring-config.yaml:/app/config/cloudmonitoring-config.yaml:ro
+    environment:
+      # Set secrets via environment variables
+      - ALERT_EMAIL_PASSWORD=${ALERT_EMAIL_PASSWORD}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+    restart: unless-stopped

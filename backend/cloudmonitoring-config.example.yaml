@@ -1,0 +1,41 @@
+# CloudMonitoring Configuration File
+# This file configures notification channels for production alerts
+
+notifications:
+  # Email notifications
+  - type: email
+    enabled: true
+    settings:
+      smtp_host: smtp.gmail.com
+      smtp_port: 587
+      sender_email: alerts@example.com
+      sender_password: ${ALERT_EMAIL_PASSWORD}  # Use environment variable
+      recipients:
+        - player1@example.com
+        - player2@example.com
+
+  # Webhook notifications (e.g., Slack, Discord)
+  - type: webhook
+    enabled: true
+    settings:
+      url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+      method: POST
+
+  # SMS notifications via Twilio
+  - type: sms
+    enabled: false
+    settings:
+      provider: twilio
+      account_sid: ${TWILIO_ACCOUNT_SID}
+      auth_token: ${TWILIO_AUTH_TOKEN}
+      phone_from: +1234567890
+      phone_to:
+        - +1987654321
+
+# Optional: Specific items to monitor
+# If empty or omitted, all items will be monitored
+# monitor_items:
+#   - iron-plate
+#   - copper-plate
+#   - electronic-circuit
+#   - advanced-circuit
