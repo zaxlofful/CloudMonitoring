@@ -17,6 +17,42 @@ local PROPERTY_PREFIX = "cloudmonitoring_property_"
 local ITEM_PREFIX = "cloudmonitoring_item_"
 local PROPERTY_SYNC_EVENT = script.generate_event_name()
 
+local FORCE_PROPERTY_FALLBACK = {
+  "ai_controllable",
+  "character_inventory_slots_bonus",
+  "character_logistic_requests",
+  "character_trash_slot_count",
+  "evolution_factor",
+  "evolution_factor_by_killing_spawners",
+  "evolution_factor_by_pollution",
+  "evolution_factor_by_time",
+  "friendly_fire",
+  "ghost_time_to_live",
+  "inserter_stack_size_bonus",
+  "item_production_statistics",
+  "kill_count_statistics",
+  "laboratory_productivity_bonus",
+  "laboratory_speed_modifier",
+  "manual_crafting_speed_modifier",
+  "manual_mining_speed_modifier",
+  "max_successful_attempts_per_tick_per_construction_queue",
+  "mining_drill_productivity_bonus",
+  "name",
+  "research_enabled",
+  "research_progress",
+  "research_queue",
+  "research_queue_enabled",
+  "rockets_launched",
+  "share_chart",
+  "stack_inserter_capacity_bonus",
+  "technologies",
+  "train_braking_force_bonus",
+  "worker_robots_battery_modifier",
+  "worker_robots_logistic_slots_bonus",
+  "worker_robots_speed_modifier",
+  "worker_robots_storage_bonus"
+}
+
 local PRODUCTION_PRESET_ITEMS = {
   "iron-plate",
   "copper-plate",
@@ -57,10 +93,34 @@ local function detect_force_properties()
   local properties = {}
   local force = get_sample_force()
   if force then
-    for key in pairs(force) do
-      if type(key) == "string" and string.sub(key, 1, 2) ~= "__" then
-        properties[key] = true
+    local function add_if_readable(property_name)
+      if type(property_name) ~= "string" or string.sub(property_name, 1, 2) == "__" then
+        return
       end
+      local ok, value = pcall(function()
+        return force[property_name]
+      end)
+      if ok and value ~= nil then
+        properties[property_name] = true
+      end
+    end
+
+    local ok, enumerated = pcall(function()
+      local keys = {}
+      for key in pairs(force) do
+        keys[#keys + 1] = key
+      end
+      return keys
+    end)
+
+    if ok and enumerated then
+      for _, key in ipairs(enumerated) do
+        add_if_readable(key)
+      end
+    end
+
+    for _, property_name in ipairs(FORCE_PROPERTY_FALLBACK) do
+      add_if_readable(property_name)
     end
   end
 
@@ -236,7 +296,6 @@ local function create_mod_button(player)
   button_flow.add {
     type = "sprite-button",
     name = MAIN_BUTTON_NAME,
-    caption = "CM",
     tooltip = "Open CloudMonitoring configuration",
     style = mod_gui.button_style,
     sprite = "utility/search_icon"
@@ -504,7 +563,7 @@ local function apply_property_change(property_name, enabled, source_player_index
   return true
 end
 
-local function sync_property_change(property_name, enabled, source_player_index)
+local function broadcast_property_change(property_name, enabled, source_player_index)
   local ok, result = pcall(script.raise_event, PROPERTY_SYNC_EVENT, {
     property_name = property_name,
     enabled = enabled,
@@ -641,7 +700,7 @@ local function on_gui_checked_state_changed(event)
 
   if string.sub(element_name, 1, #PROPERTY_PREFIX) == PROPERTY_PREFIX then
     local property_name = string.sub(element_name, #PROPERTY_PREFIX + 1)
-    sync_property_change(property_name, element.state, player.index)
+    broadcast_property_change(property_name, element.state, player.index)
     return
   end
 
@@ -739,7 +798,11 @@ remote.add_interface("cloudmonitoring", {
   end,
   get_enabled_properties = function()
     ensure_runtime_state()
-    return global.cloudmonitoring_config.enabled_properties
+    local copied = {}
+    for property_name, enabled in pairs(global.cloudmonitoring_config.enabled_properties) do
+      copied[property_name] = enabled and true or false
+    end
+    return copied
   end
 })
 
