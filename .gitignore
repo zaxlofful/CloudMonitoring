@@ -48,4 +48,6 @@ yarn-error.log*
 
 # Local config / runtime logs
 cloudmonitoring-config.yaml
+cloudmonitoring-config.yml
+cloudmonitoring-config.json
 cloudmonitoring-alerts.log

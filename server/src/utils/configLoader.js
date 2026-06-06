@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const YAML = require('yaml');
-
 const { substituteEnvInObject } = require('./envSubstitution');
 
 function asArray(value) {
@@ -24,8 +22,38 @@ async function loadConfigFile(configPath) {
   let raw = {};
 
   try {
-    const yamlText = await fs.promises.readFile(configPath, 'utf8');
-    raw = YAML.parse(yamlText) ?? {};
+    const text = await fs.promises.readFile(configPath, 'utf8');
+    const ext = path.extname(configPath).toLowerCase();
+
+    if (ext === '.json') {
+      raw = JSON.parse(text) ?? {};
+    } else if (ext === '.yaml' || ext === '.yml') {
+      let YAML;
+      try {
+        // Optional dependency - only required when YAML config is used.
+        // eslint-disable-next-line global-require
+        YAML = require('yaml');
+      } catch {
+        console.warn('[cloudmonitoring] YAML config requested but `yaml` dependency is not installed');
+        raw = {};
+      }
+
+      if (YAML) raw = YAML.parse(text) ?? {};
+    } else {
+      // Best-effort: try JSON, then YAML (if available).
+      try {
+        raw = JSON.parse(text) ?? {};
+      } catch {
+        let YAML;
+        try {
+          // eslint-disable-next-line global-require
+          YAML = require('yaml');
+        } catch {
+          YAML = null;
+        }
+        raw = YAML ? (YAML.parse(text) ?? {}) : {};
+      }
+    }
   } catch (error) {
     console.warn('[cloudmonitoring] config read failed:', error?.message ?? error);
   }

@@ -1,5 +1,3 @@
-const nodemailer = require('nodemailer');
-
 async function notify(itemName, settings) {
   const smtpHost = settings?.smtp_host;
   const smtpPort = settings?.smtp_port;
@@ -9,6 +7,16 @@ async function notify(itemName, settings) {
 
   if (!smtpHost || !smtpPort || !senderEmail || !senderPassword || !Array.isArray(recipients) || recipients.length === 0) {
     console.warn('[cloudmonitoring][email] missing required settings; skipping');
+    return false;
+  }
+
+  let nodemailer;
+  try {
+    // Optional dependency - only required when email notifications are enabled.
+    // eslint-disable-next-line global-require
+    nodemailer = require('nodemailer');
+  } catch {
+    console.warn('[cloudmonitoring][email] nodemailer dependency not installed');
     return false;
   }
 

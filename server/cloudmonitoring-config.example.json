@@ -1,0 +1,12 @@
+{
+  "notifications": [
+    {
+      "type": "webhook",
+      "enabled": true,
+      "settings": {
+        "url": "${ALERT_WEBHOOK_URL}",
+        "method": "POST"
+      }
+    }
+  ]
+}

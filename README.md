@@ -9,6 +9,6 @@ The intent is to be a mode that will show a WEBGUI to the end-user. Using in-gam
 
 The out-of-game watcher/notification service lives in `server/`.
 
-- Setup: `cd server && npm install`
-- Config: `server/cloudmonitoring-config.yaml` (start from `server/cloudmonitoring-config.example.yaml`)
+- Setup: `cd server && npm install` (no deps by default; installs optional packages only if you enable those features)
+- Config (default): `server/cloudmonitoring-config.json` (start from `server/cloudmonitoring-config.example.json`)
 - Run: `cd server && npm start`

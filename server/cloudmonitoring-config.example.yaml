@@ -30,6 +30,9 @@ notifications:
 #   - iron-plate
 #   - copper-plate
 
+# Note: YAML config requires `yaml` to be installed:
+#   cd server && npm install yaml
+
 # Optional: override paths (defaults can come from env)
 # game_folder: /app/gamedata
 # script_output_dir: /app/gamedata/script-output

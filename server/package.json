@@ -12,11 +12,5 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "dependencies": {
-    "nodemailer": "^8.0.10",
-    "yaml": "^2.9.0"
-  },
-  "optionalDependencies": {
-    "twilio": "^6.0.2"
-  }
+  "dependencies": {}
 }

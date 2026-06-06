@@ -2,19 +2,41 @@
 
 This is the out-of-game sidecar that watches Factorio's `script-output/` for `cloudmonitoring-data-*.json` files and sends alerts when an item's production hits `0`.
 
-## Quick start
+## Quick start (no dependencies)
 
 ```bash
 cd server
-cp cloudmonitoring-config.example.yaml cloudmonitoring-config.yaml
-npm install
+cp cloudmonitoring-config.example.json cloudmonitoring-config.json
 npm start
 ```
 
 ## Configuration
 
-- Config file: `cloudmonitoring-config.yaml` (override with `CLOUDMONITORING_CONFIG=/path/to/config.yaml`)
-- Env vars in YAML: supports `${VAR_NAME}` substitution
+- Config file (default): `cloudmonitoring-config.json` (override with `CLOUDMONITORING_CONFIG=/path/to/config.(json|yaml|yml)`)
+- Env var substitution: supports `${VAR_NAME}` in config values
+
+### YAML support (optional)
+
+If you want to use `cloudmonitoring-config.yaml` / `.yml`, install the YAML parser:
+
+```bash
+cd server
+npm install yaml
+```
+
+### Email support (optional)
+
+```bash
+cd server
+npm install nodemailer
+```
+
+### SMS support (optional, Twilio)
+
+```bash
+cd server
+npm install twilio
+```
 
 ### Paths
 
