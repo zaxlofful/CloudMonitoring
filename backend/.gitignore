@@ -1,0 +1,25 @@
+# Build artifacts
+cloudmonitoring-backend
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output coverage
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Log files
+*.log
+
+# Config with secrets (example is ok)
+cloudmonitoring-config.yaml
+!cloudmonitoring-config.example.yaml
